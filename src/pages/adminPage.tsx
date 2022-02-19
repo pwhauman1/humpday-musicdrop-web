@@ -1,4 +1,5 @@
 import LoginModule from "../modules/loginModule";
+import DropsMonthDisplay from "../components/dropsMonthDisplay";
 
 export default function AdminPage() {
     const loginModule = LoginModule.getInstance();
@@ -7,8 +8,7 @@ export default function AdminPage() {
     }
     return (
         <div>
-            <h1>I am the Admin Page</h1>
-            <button onClick={onClick}>Logout</button>
+            <DropsMonthDisplay />
         </div>
     );
 }
