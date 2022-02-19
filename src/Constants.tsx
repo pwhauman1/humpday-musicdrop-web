@@ -1,6 +1,6 @@
 export enum FLOW_STATES {
     READY,
-    LODADING,
+    LOADING,
     ERROR,
 }
 
@@ -14,4 +14,16 @@ export interface IDrop {
     favoriteSong?: string,
     favoriteLyric?: string,
     desc?: string,
+}
+
+export function sendDateKeyToDate(sendDateKey: number): Date {
+    const asString = '' + sendDateKey;
+    const year = parseInt(asString.slice(0,4));
+    const month = parseInt(asString.slice(4,6));
+    const day = parseInt(asString.slice(6));
+    const date = new Date();
+    date.setFullYear(year);
+    date.setMonth(month);
+    date.setDate(day);
+    return date;
 }
