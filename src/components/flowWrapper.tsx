@@ -5,6 +5,7 @@ export interface IFlowWrapperProps {
     flow: FLOW_STATES,
     readyChildren: JSX.Element,
     errorChildren: JSX.Element,
+    noneChildren?: JSX.Element,
 }
 
 export default function FlowWrapper(props: IFlowWrapperProps) {
@@ -15,6 +16,8 @@ export default function FlowWrapper(props: IFlowWrapperProps) {
             return props.errorChildren;
         case FLOW_STATES.READY:
             return props.readyChildren;
+        case FLOW_STATES.NONE:
+            return props.noneChildren ? props.noneChildren : null;
         default:
             return props.errorChildren;
     }

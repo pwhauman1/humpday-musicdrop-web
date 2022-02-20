@@ -2,6 +2,7 @@ export enum FLOW_STATES {
     READY,
     LOADING,
     ERROR,
+    NONE,
 }
 
 export interface IDrop {
@@ -27,3 +28,6 @@ export function sendDateKeyToDate(sendDateKey: number): Date {
     date.setDate(day);
     return date;
 }
+
+export const IMAGE_WIDTH = 100;
+export const CARD_WIDTH = 450;

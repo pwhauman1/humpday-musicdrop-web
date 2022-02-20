@@ -1,12 +1,10 @@
-import { IDrop, sendDateKeyToDate } from "../Constants";
+import { IDrop, sendDateKeyToDate, IMAGE_WIDTH, CARD_WIDTH } from "../Constants";
 import { Card, Image, Row, Col, Typography } from "antd";
 
 const { Text } = Typography;
 
 export interface IDropCardProps extends IDrop { }
 interface IDropsCardState extends IDrop { };
-const IMAGE_WIDTH = 100;
-const CARD_WIDTH = 450;
 
 export default function DropCard(props: IDropCardProps) {
     const TopRow = () => getTopRow(props.imageUrl, props.sendDateKey, props.albumId);
