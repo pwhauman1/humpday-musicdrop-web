@@ -35,7 +35,7 @@ function getResponseDataAsJson(response: AxiosResponse): ILambdaResponse | undef
     if (!data?.content.infoMessage) {
         console.log('Axios data as no infoMessage');
     } else {
-        console.log(data.content.infoMessage)
+        console.log(`getResponseDataAsJson: ${data.content.infoMessage}`)
     }
     return {
         ...data.content,
