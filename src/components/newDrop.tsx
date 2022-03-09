@@ -1,11 +1,18 @@
-import { Col, Row, Skeleton, Image, DatePicker, Typography, Input, Button, Form } from "antd";
+import { Col, Row, Skeleton, Image, DatePicker, Typography, Input, Button, Form, Select } from "antd";
 import React from "react";
 import { FLOW_STATES, IDrop, IMAGE_WIDTH } from "../Constants";
 import FlowWrapper from "./flowWrapper";
 import { Moment } from "moment";
-import { parseForSpotifyId, getRelaventSpotifyInformation, ISpotifyInfo } from "../modules/spotifyModule";
+import { parseForSpotifyId, getRelaventSpotifyInformation, ISpotifyInfo, ISong } from "../modules/spotifyModule";
+import TextArea from "antd/lib/input/TextArea";
 
 const { Text } = Typography;
+
+interface ISubjectives {
+    desc?: string,
+    favoriteSong?: string,
+    favoriteLyric?: string,
+}
 
 interface INewDropState {
     sendMoment: Moment | null,
@@ -15,6 +22,7 @@ interface INewDropState {
     spotifyFlow: FLOW_STATES,
     canSubmit: boolean,
     spotifyInfo?: ISpotifyInfo,
+    subjectives: ISubjectives
 }
 
 export default function NewDrop() {
@@ -22,10 +30,131 @@ export default function NewDrop() {
         spotifyFlow: FLOW_STATES.NONE,
         canSubmit: false,
         sendMoment: null,
+        subjectives: {},
     });
-    console.log('STATE:', state);
+    console.info('STATE:', state);
     const TopRow = () => getTopRow(state, setState);
-    return <TopRow />;
+    const Body = () => getBody(state, setState);
+    return (
+        <div>
+            <TopRow />
+            <Body />
+        </div>
+    )
+}
+
+function getDisabledKeyVal(key: string, value: string | undefined) { 
+    return (
+        <div>
+            <Text strong>{key}:</Text>
+            <Input placeholder={value} disabled/>
+        </div>
+    )
+}
+
+function getDesc(setState: Function, currValue: string | undefined) {
+    const onChange = (val: any) => {
+        const desc = val.target.value;
+        setState((prev: INewDropState) => {
+            const newState = {
+                ...prev,
+            };
+            newState.subjectives.desc = desc;
+            return newState;
+        });
+    }
+    return (
+        <div>
+            <TextArea 
+                placeholder='Album Description'
+                autoSize={{maxRows:4}} 
+                onChange={onChange}
+                value={currValue}
+            />
+        </div>
+    )
+}
+
+function getFavLyric(setState: Function, currValue: string | undefined) {
+    const onChange = (val: any) => {
+        const favoriteLyric = val.target.value;
+        setState((prev: INewDropState) => {
+            const newState = {
+                ...prev,
+            };
+            newState.subjectives.favoriteLyric = favoriteLyric;
+            return newState;
+        });
+    }
+    return (
+        <div>
+            <TextArea 
+                placeholder='Favorite Lyric'
+                autoSize={{maxRows:4}} 
+                onChange={onChange}
+                value={currValue}
+            />
+        </div>
+    )
+}
+
+function getSongs(songs: ISong[], setState: Function, currSelected: string | undefined) {
+    const onChange = (val: string) => {
+        setState((prev: INewDropState) => {
+            const newState = {
+                ...prev,
+            };
+            newState.subjectives.favoriteSong = val;
+            return newState;
+        });
+    }
+    const { Option } = Select;
+    const options: JSX.Element[] = [];
+    songs.forEach(val => {
+        options.push(<Option key={val.songId} value={val.name}>{val.name}</Option>)
+    });
+    return (
+        <div>
+            <Select 
+                placeholder='Select a song'
+                onChange={onChange}
+                allowClear
+                value={currSelected}
+            >
+                {options}
+            </Select>
+        </div>
+    )
+}
+
+function getBody(state: INewDropState, setState: Function) {
+    const placeholderString = state.albumId ? 'Set an album id above :D'
+        : `Invalid Album ID: ${state.albumId}`;
+    const placeholder: JSX.Element = <p>{placeholderString}</p>;
+    const spotifyInfo = state.spotifyInfo;
+    let dropsKeyValPairs: JSX.Element;
+    if(spotifyInfo) {
+        dropsKeyValPairs = <div>
+            {getDisabledKeyVal('Album', spotifyInfo.albumName)}
+            {getDisabledKeyVal('Artist', spotifyInfo.artist)}
+            {getDesc(setState, state.subjectives.desc)}
+            {getSongs(spotifyInfo.songs, setState, state.subjectives.favoriteSong)}
+            {getFavLyric(setState, state.subjectives.favoriteLyric)}
+        </div>
+    } else {
+        dropsKeyValPairs = placeholder;
+    }
+
+    return (
+        <div>
+            <FlowWrapper
+                flow={state.spotifyFlow}
+                readyChildren={dropsKeyValPairs}
+                errorChildren={placeholder}
+                noneChildren={placeholder}
+            />
+        </div>
+    )
 }
 
 function getTopRow(state: INewDropState, setState: Function) {
@@ -52,7 +181,7 @@ function getAlbumIdInput(setState: Function): JSX.Element {
         const albumId = parseForSpotifyId(albumIdFromForm);
         // before we call the async spotify function, we first set our state to loading
         setState((previousState: INewDropState) => {
-            console.log('Waiting for spotify to finish');
+            console.info('Waiting for spotify to finish');
             const newState: INewDropState = {
                 ...previousState,
                 spotifyFlow: FLOW_STATES.LOADING,
@@ -61,23 +190,23 @@ function getAlbumIdInput(setState: Function): JSX.Element {
         });
         getRelaventSpotifyInformation(albumId)
             .then((spotifyInfo: ISpotifyInfo | undefined) => {
-                console.log('Got Album Info From Spotify');
+                console.info('Got Album Info From Spotify');
                 setState((previousState: INewDropState) => {
                     const canSubmit = !!previousState.sendMoment && !!spotifyInfo
                     const newState: INewDropState = {
                         ...previousState,
                         albumId,
                         canSubmit,
-                        spotifyFlow: FLOW_STATES.READY,
                     }
                     // if spotifyInfo isn't undefined, update our state
-                    // if spotifyInfo is undefined and we have some in our previous state,
-                    // delete it from our state
+                    // if spotifyInfo is undefined, delete it from our state 
+                    // and set spotify flow to none
                     if (!!spotifyInfo) {
                         newState.spotifyInfo = spotifyInfo;
-                    } else if (newState.spotifyInfo) {
+                        newState.spotifyFlow = FLOW_STATES.READY;
+                    } else {
                         delete newState.spotifyInfo;
-                        newState.canSubmit = false;
+                        newState.spotifyFlow = FLOW_STATES.NONE;
                     }
                     return newState;
                 });
@@ -92,7 +221,7 @@ function getAlbumIdInput(setState: Function): JSX.Element {
                 });
             })
 
-        console.log('Changing Album Id', albumId);
+        console.info('Changing Album Id', albumId);
     }
     return (
         <Form onFinish={onFill} layout="inline">
