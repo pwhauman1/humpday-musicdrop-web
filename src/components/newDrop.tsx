@@ -1,6 +1,6 @@
 import { Col, Row, Skeleton, Image, DatePicker, Typography, Input, Button, Form, Select } from "antd";
 import React from "react";
-import { FLOW_STATES, IDrop, IMAGE_WIDTH } from "../Constants";
+import { FLOW_STATES, IMAGE_WIDTH } from "../Constants";
 import FlowWrapper from "./flowWrapper";
 import { Moment } from "moment";
 import { parseForSpotifyId, getRelaventSpotifyInformation, ISpotifyInfo, ISong } from "../modules/spotifyModule";
@@ -14,98 +14,137 @@ interface ISubjectives {
     favoriteLyric?: string,
 }
 
+// This is what will cause the NewDrop info area to rerender
 interface INewDropState {
-    sendMoment: Moment | null,
-    sendDateKey?: number,
     albumId?: string,
-    drop?: IDrop,
     spotifyFlow: FLOW_STATES,
-    canSubmit: boolean,
     spotifyInfo?: ISpotifyInfo,
-    subjectives: ISubjectives
 }
+
+// This state will be used to put a drop in our DDB
+// and be used to toggle the submit button's disabled attribute
+interface ISubmitState {
+    subjectives: ISubjectives,
+    sendDateKey?: number,
+    spotifyInfo?: ISpotifyInfo
+}
+
+let setSubmitState: Function;
 
 export default function NewDrop() {
     const [state, setState] = React.useState<INewDropState>({
         spotifyFlow: FLOW_STATES.NONE,
-        canSubmit: false,
-        sendMoment: null,
-        subjectives: {},
     });
-    console.info('STATE:', state);
     const TopRow = () => getTopRow(state, setState);
-    const Body = () => getBody(state, setState);
+    const Body = () => getBody(state);
     return (
         <div>
             <TopRow />
             <Body />
+            <SubmitButton />
         </div>
     )
 }
 
-function getDisabledKeyVal(key: string, value: string | undefined) { 
+function SubmitButton() {
+    const [state, setState] = React.useState<ISubmitState>({
+        subjectives: {}
+    });
+    setSubmitState = setState;
+    // on submit, do something with the state
+    const canSubmit = !!state.spotifyInfo && !!state.sendDateKey;
+    const onClick = () => {
+        console.info('SUBMITTED!', state);
+    }
     return (
         <div>
-            <Text strong>{key}:</Text>
-            <Input placeholder={value} disabled/>
+            <Button
+                disabled={!canSubmit}
+                onClick={onClick}
+            >
+                Submit!
+            </Button>
         </div>
     )
 }
 
-function getDesc(setState: Function, currValue: string | undefined) {
+// to reduce duplicate code for getting the artist and album
+// fields
+function getDisabledKeyVal(key: string, value: string | undefined) {
+    return (
+        <div>
+            <Row>
+                <Col>
+                    <Text strong>{key}: </Text>
+                </Col>
+                <Col>
+                    <Input placeholder={value} disabled />
+                </Col>
+            </Row>
+        </div>
+    )
+}
+
+function getDesc() {
     const onChange = (val: any) => {
         const desc = val.target.value;
-        setState((prev: INewDropState) => {
-            const newState = {
-                ...prev,
-            };
-            newState.subjectives.desc = desc;
-            return newState;
+        setSubmitState((prev: ISubmitState) => {
+            const curr = { ...prev };
+            curr.subjectives.desc = desc;
+            return curr;
         });
     }
     return (
         <div>
-            <TextArea 
-                placeholder='Album Description'
-                autoSize={{maxRows:4}} 
-                onChange={onChange}
-                value={currValue}
-            />
+            <Row>
+                <Col>
+                    <Text strong>Description: </Text>
+                </Col>
+                <Col>
+                    <TextArea
+                        placeholder='Album Description'
+                        autoSize={{ maxRows: 4 }}
+                        onChange={onChange}
+                    />
+                </Col>
+            </Row>
         </div>
     )
 }
 
-function getFavLyric(setState: Function, currValue: string | undefined) {
+function getFavLyric() {
     const onChange = (val: any) => {
         const favoriteLyric = val.target.value;
-        setState((prev: INewDropState) => {
-            const newState = {
-                ...prev,
-            };
-            newState.subjectives.favoriteLyric = favoriteLyric;
-            return newState;
+        setSubmitState((prev: ISubmitState) => {
+            const curr = { ...prev };
+            curr.subjectives.favoriteLyric = favoriteLyric;
+            return curr;
         });
     }
     return (
         <div>
-            <TextArea 
-                placeholder='Favorite Lyric'
-                autoSize={{maxRows:4}} 
-                onChange={onChange}
-                value={currValue}
-            />
+            <Row>
+                <Col>
+                    <Text strong>Lyric: </Text>
+                </Col>
+                <Col>
+                    <TextArea
+                        placeholder='Favorite Lyric'
+                        autoSize={{ maxRows: 4 }}
+                        onChange={onChange}
+                    />
+                </Col>
+            </Row>
         </div>
     )
 }
 
-function getSongs(songs: ISong[], setState: Function, currSelected: string | undefined) {
+function getSongs(songs: ISong[]) {
     const onChange = (val: string) => {
-        setState((prev: INewDropState) => {
-            const newState = {
-                ...prev,
-            };
-            newState.subjectives.favoriteSong = val;
-            return newState;
+        setSubmitState((prev: ISubmitState) => {
+            const curr = { ...prev };
+            curr.subjectives.favoriteSong = val;
+            return curr;
         });
     }
     const { Option } = Select;
@@ -115,31 +154,37 @@ function getSongs(songs: ISong[], setState: Function, currSelected: string | und
     });
     return (
         <div>
-            <Select 
-                placeholder='Select a song'
-                onChange={onChange}
-                allowClear
-                value={currSelected}
-            >
-                {options}
-            </Select>
+            <Row>
+                <Col>
+                    <Text strong>Song: </Text>
+                </Col>
+                <Col>
+                    <Select
+                        placeholder='Select a song'
+                        onChange={onChange}
+                        allowClear
+                    >
+                        {options}
+                    </Select>
+                </Col>
+            </Row>
+
         </div>
     )
 }
 
-function getBody(state: INewDropState, setState: Function) {
-    const placeholderString = state.albumId ? 'Set an album id above :D'
-        : `Invalid Album ID: ${state.albumId}`;
+function getBody(state: INewDropState) {
+    const placeholderString = state.albumId ? 'Set an album id above :D' : `Invalid Album ID: ${state.albumId}`;
     const placeholder: JSX.Element = <p>{placeholderString}</p>;
     const spotifyInfo = state.spotifyInfo;
     let dropsKeyValPairs: JSX.Element;
-    if(spotifyInfo) {
+    if (spotifyInfo) {
         dropsKeyValPairs = <div>
             {getDisabledKeyVal('Album', spotifyInfo.albumName)}
             {getDisabledKeyVal('Artist', spotifyInfo.artist)}
-            {getDesc(setState, state.subjectives.desc)}
-            {getSongs(spotifyInfo.songs, setState, state.subjectives.favoriteSong)}
-            {getFavLyric(setState, state.subjectives.favoriteLyric)}
+            {getDesc()}
+            {getSongs(spotifyInfo.songs)}
+            {getFavLyric()}
         </div>
     } else {
         dropsKeyValPairs = placeholder;
@@ -159,7 +204,7 @@ function getBody(state: INewDropState, setState: Function) {
 
 function getTopRow(state: INewDropState, setState: Function) {
     const DropImage = () => getDropImage(state.spotifyFlow, state.spotifyInfo?.imageUrl);
-    const SendOn = () => getSendOnInput(setState, state.sendMoment);
+    const SendOn = () => getSendOnInput();
     const AlbumId = () => getAlbumIdInput(setState);
     return (
         <Row>
@@ -175,13 +220,13 @@ function getTopRow(state: INewDropState, setState: Function) {
 }
 
 function getAlbumIdInput(setState: Function): JSX.Element {
+    // OnFill will initiate the spotify fetch
     const onFill = (values: any) => {
         const albumIdFromForm = values.albumId;
         if (!albumIdFromForm) return; // TODO: something here maybe an error?
         const albumId = parseForSpotifyId(albumIdFromForm);
         // before we call the async spotify function, we first set our state to loading
         setState((previousState: INewDropState) => {
-            console.info('Waiting for spotify to finish');
             const newState: INewDropState = {
                 ...previousState,
                 spotifyFlow: FLOW_STATES.LOADING,
@@ -190,13 +235,17 @@ function getAlbumIdInput(setState: Function): JSX.Element {
         });
         getRelaventSpotifyInformation(albumId)
             .then((spotifyInfo: ISpotifyInfo | undefined) => {
-                console.info('Got Album Info From Spotify');
+                // Update the submit state with our spotify info
+                setSubmitState((prev: ISubmitState) => {
+                    const curr = { ...prev }
+                    curr.spotifyInfo = spotifyInfo;
+                    return curr;
+                });
+                // update the state of our body
                 setState((previousState: INewDropState) => {
-                    const canSubmit = !!previousState.sendMoment && !!spotifyInfo
                     const newState: INewDropState = {
                         ...previousState,
                         albumId,
-                        canSubmit,
                     }
                     // if spotifyInfo isn't undefined, update our state
                     // if spotifyInfo is undefined, delete it from our state 
@@ -212,6 +261,13 @@ function getAlbumIdInput(setState: Function): JSX.Element {
                 });
             }).catch(err => {
                 console.error(`Error when getting spotify info for ${albumId}\n${err.message}`);
+                // rid spotifyInfo from submitState
+                setSubmitState((prev: ISubmitState) => {
+                    const curr = { ...prev };
+                    delete curr.spotifyInfo;
+                    return curr;
+                });
+                // update our spotify flow to ERROR
                 setState((previousState: INewDropState) => {
                     const newState: INewDropState = {
                         ...previousState,
@@ -219,9 +275,7 @@ function getAlbumIdInput(setState: Function): JSX.Element {
                     }
                     return newState;
                 });
-            })
-
-        console.info('Changing Album Id', albumId);
+            });
     }
     return (
         <Form onFinish={onFill} layout="inline">
@@ -237,22 +291,19 @@ function getAlbumIdInput(setState: Function): JSX.Element {
     )
 }
 
-function getSendOnInput(setState: Function, moment: Moment | null): JSX.Element {
-
+function getSendOnInput(): JSX.Element {
     // On Change, we update our state
-    const onChange = (date: Moment | null, dateString: string) => {
+    const onChange = (_: Moment | null, dateString: string) => {
         const sendDateKey = parseInt(dateString.replaceAll('-', ''));
-        setState((previousState: INewDropState) => {
-            const newState = { ...previousState };
-            newState.sendMoment = date;
-            newState.sendDateKey = sendDateKey;
-            newState.canSubmit = !!newState.spotifyInfo && !!date;
-            return newState;
+        setSubmitState((prev: ISubmitState) => {
+            const curr = { ...prev };
+            curr.sendDateKey = sendDateKey;
+            return curr;
         });
     }
 
     return (
-        <DatePicker onChange={onChange} value={moment} />
+        <DatePicker onChange={onChange} />
     )
 }
 
