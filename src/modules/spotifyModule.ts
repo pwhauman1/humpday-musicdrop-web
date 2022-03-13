@@ -16,7 +16,6 @@ export interface ISpotifyInfo {
 }
 
 const CLIENT_ID = '550a7c4f41d4465a859f4fa6f302d05d';
-const CLIENT_SECRET = '27e8008d64f64139a6d565b31e9e0b39';
 const LOCAL_REDIRECT_URL = 'http://localhost:3000/admin';
 const PROD_REDIRECT_URL = 'https://humpdaymusicdrop.com/admin';
 
