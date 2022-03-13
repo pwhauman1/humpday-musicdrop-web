@@ -1,17 +1,18 @@
 import LoginModule, { ILoginSuccess } from "../modules/loginModule";
+import { GoogleLogin } from 'react-google-login';
 
 export default function LoginPage() {
     const loginModule = LoginModule.getInstance();
-    const creds: ILoginSuccess = {
-        id_token: 'sometoken',
-    }
-    const onClick = () => {
-        loginModule.loginSuccess(creds);
-    }
     return (
         <div>
             <h1>I am the Login Page</h1>
-            <button onClick={onClick}>Login</button>
+            <GoogleLogin
+                clientId={loginModule.getGoogleClientId()}
+                buttonText='Login with Google'
+                onSuccess={loginModule.googleSuccess}
+                onFailure={loginModule.googleFail}
+                isSignedIn={true}
+            />
         </div>
     );
 }

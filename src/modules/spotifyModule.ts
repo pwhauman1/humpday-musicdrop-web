@@ -1,5 +1,5 @@
 import SpotifyWebApi from 'spotify-web-api-node';
-import { getAuthorizeSpotify } from './axiosModule';
+import buildUrl from 'build-url';
 
 export interface ISong {
     songId: string,
@@ -19,6 +19,9 @@ const CLIENT_ID = '550a7c4f41d4465a859f4fa6f302d05d';
 const LOCAL_REDIRECT_URL = 'http://localhost:3000/admin';
 const PROD_REDIRECT_URL = 'https://humpdaymusicdrop.com/admin';
 
+const SPOTIFY_DOMAIN = 'https://accounts.spotify.com/';
+const SPOTIFY_AUTH_PATH = 'authorize';
+
 export class SpotifyModule {
     private static instance: SpotifyModule;
 
@@ -31,11 +34,27 @@ export class SpotifyModule {
             clientId: CLIENT_ID,
             redirectUri: this.redirectUri
         });
-        const spotifyAuthResponse = getAuthorizeSpotify(
+        const spotifyAuthEndpoint = this.getSpotifyAuthEndpoint(
             CLIENT_ID,
             'code',
-            this.redirectUri,
+            this.redirectUri
         );
+        console.log(spotifyAuthEndpoint);
+    }
+
+    private getSpotifyAuthEndpoint(
+        clientId: string,
+        responseType: string,
+        redirectUri: string,
+    ): string {
+        return buildUrl(SPOTIFY_DOMAIN, {
+            path: SPOTIFY_AUTH_PATH,
+            queryParams: {
+                'client_id': clientId,
+                'response_type': responseType,
+                'redirect_uri': redirectUri,
+            }
+        })
     }
 
     public static getInstance(location:string) {

@@ -8,10 +8,6 @@ const RECIPIENTS = 'recipients';
 const DROPS_ENDPONINT = urlJoin(HDMD_API_ENDPOINT, DROPS);
 const RECIPIENTS_ENDPONINT = urlJoin(HDMD_API_ENDPOINT, RECIPIENTS);
 
-const SPOTIFY_ENDPOINT = 'https://accounts.spotify.com:443';
-const AUTHORIZE = 'authorize';
-const SPOTIFY_AUTH_ENDPOINT = urlJoin(SPOTIFY_ENDPOINT, AUTHORIZE);
-
 export interface ILambdaResponse {
     infoMessage: string,
     [param: string]: any,
@@ -28,27 +24,6 @@ export async function getDrops(month: number, year: number): Promise<IDrop[]> {
     const data = getResponseFromLambdaDataAsJson(response);
     if (!data) throw Error('Could not parse getDrops response!');
     return data.drops ? data.drops : [];
-}
-
-export async function getAuthorizeSpotify(
-    clientId: string,
-    responseType: string,
-    redirectUri: string,
-    // state?: string,
-    // scope?: string[],
-    // showDialog?: boolean,
-): Promise<any> {
-    const response = await axios.get(SPOTIFY_AUTH_ENDPOINT, {
-        params: {
-            'client_id': clientId,
-            'response_type': responseType,
-            'redirect_uri': redirectUri,
-            // state,
-            // scope,
-            // 'show_dialog': showDialog,
-        }
-    });
-    console.info('AUTH SPOT', response);
 }
 
 function getResponseFromLambdaDataAsJson(response: AxiosResponse): ILambdaResponse | undefined {
