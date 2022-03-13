@@ -3,7 +3,7 @@ import React from "react";
 import { FLOW_STATES, IMAGE_WIDTH } from "../Constants";
 import FlowWrapper from "./flowWrapper";
 import { Moment } from "moment";
-import { parseForSpotifyId, getRelaventSpotifyInformation, ISpotifyInfo, ISong } from "../modules/spotifyModule";
+import { getRelaventSpotifyInformation, ISpotifyInfo, ISong, SpotifyModule } from "../modules/spotifyModule";
 import TextArea from "antd/lib/input/TextArea";
 
 const { Text } = Typography;
@@ -224,7 +224,6 @@ function getAlbumIdInput(setState: Function): JSX.Element {
     const onFill = (values: any) => {
         const albumIdFromForm = values.albumId;
         if (!albumIdFromForm) return; // TODO: something here maybe an error?
-        const albumId = parseForSpotifyId(albumIdFromForm);
         // before we call the async spotify function, we first set our state to loading
         setState((previousState: INewDropState) => {
             const newState: INewDropState = {
@@ -233,6 +232,8 @@ function getAlbumIdInput(setState: Function): JSX.Element {
             }
             return newState;
         });
+        const spotifyMod = SpotifyModule.getInstance(window.location.href);
+        const albumId = spotifyMod.parseForSpotifyId(albumIdFromForm);
         getRelaventSpotifyInformation(albumId)
             .then((spotifyInfo: ISpotifyInfo | undefined) => {
                 // Update the submit state with our spotify info

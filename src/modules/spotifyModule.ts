@@ -1,11 +1,5 @@
-export function parseForSpotifyId(str: string): string {
-    // expecting something like:
-    // 'https://open.spotify.com/album/6WrxgVbi9Q96gV8tZMq3FH?si=wcwPE8UNSeCbRUT6iJIggw'
-    const regexp = /^https:\/\/open\.spotify\.com\/[a-z]*\/(\S*)\?si=.*$/;
-    const match = str.match(regexp);
-    if (match) return match[1];
-    return str;
-}
+import SpotifyWebApi from 'spotify-web-api-node';
+import { getAuthorizeSpotify } from './axiosModule';
 
 export interface ISong {
     songId: string,
@@ -21,8 +15,48 @@ export interface ISpotifyInfo {
     songs: ISong[],
 }
 
+const CLIENT_ID = '550a7c4f41d4465a859f4fa6f302d05d';
+const CLIENT_SECRET = '27e8008d64f64139a6d565b31e9e0b39';
+const LOCAL_REDIRECT_URL = 'http://localhost:3000/admin';
+const PROD_REDIRECT_URL = 'https://humpdaymusicdrop.com/admin';
+
+export class SpotifyModule {
+    private static instance: SpotifyModule;
+
+    private redirectUri: string;
+    private spotifyApi: SpotifyWebApi;
+
+    private constructor(location: string) {
+        this.redirectUri = location.includes('localhost') ? LOCAL_REDIRECT_URL : PROD_REDIRECT_URL;
+        this.spotifyApi = new SpotifyWebApi({
+            clientId: CLIENT_ID,
+            redirectUri: this.redirectUri
+        });
+        const spotifyAuthResponse = getAuthorizeSpotify(
+            CLIENT_ID,
+            'code',
+            this.redirectUri,
+        );
+    }
+
+    public static getInstance(location:string) {
+        if(!this.instance) this.instance = new SpotifyModule(location);
+        return this.instance;
+    }
+
+    public parseForSpotifyId(str: string): string {
+        // expecting something like:
+        // 'https://open.spotify.com/album/6WrxgVbi9Q96gV8tZMq3FH?si=wcwPE8UNSeCbRUT6iJIggw'
+        const regexp = /^https:\/\/open\.spotify\.com\/[a-z]*\/(\S*)\?si=.*$/;
+        const match = str.match(regexp);
+        if (match) return match[1];
+        return str;
+    }
+
+}
+
 export async function getRelaventSpotifyInformation(albumId: string): Promise<ISpotifyInfo | undefined> {
-    await sleep(1000);
+    // await sleep(1000);
     if (albumId === 'test' || albumId === '7G7lPTcJta35qGZ8LMIJ4y') {
         return {
             albumId: '7G7lPTcJta35qGZ8LMIJ4y',
