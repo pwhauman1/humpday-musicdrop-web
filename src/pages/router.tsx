@@ -8,6 +8,7 @@ import HomePage from "./homePage";
 import UnsubPage from "./unsubPage";
 import LoginPage from "./loginPage";
 import AdminPage from "./adminPage";
+import SpotifyCallbackPage from "./spotifyCallback";
 
 export interface IRouterProps {
     isLoggedIn: boolean;
@@ -33,6 +34,7 @@ export function MyRoutes(isLoggedIn: boolean) {
             <Route path='unsubscribe' element={<UnsubPage />} />
             <Route path='login' element={loginWithNavigate} />
             <Route path='admin' element={adminWithNavigate} />
+            <Route path='spotifyCallback' element={<SpotifyCallbackPage />} />
         </Routes>
     )
 }

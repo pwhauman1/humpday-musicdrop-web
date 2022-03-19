@@ -1,5 +1,6 @@
 import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
 import { setLoginCookie, getCookie, removeCookie } from './cookieMonster';
+import { SpotifyModule } from './spotifyModule';
 
 export interface ILoginSuccess {
     id_token?: string;
@@ -10,7 +11,7 @@ export const GOOGLE_CLIENT_ID = '133190089084-dbtescu4flhep75a4hgrn1elcvu2l1nl.a
 
 export default class LoginModule {
     static instance: LoginModule;
-    updateLoginState: Function;
+    private updateLoginState: Function;
 
     private constructor(updateLoginState: Function) {
         this.updateLoginState = updateLoginState;
@@ -45,10 +46,9 @@ export default class LoginModule {
         console.log('RESPNOSE: ', response);
         const responseNotOffline = response as GoogleLoginResponse;
         const token = responseNotOffline.tokenObj.id_token;
-        const loginProps: ILoginSuccess = {
-            id_token: token
-        };
-        this.loginSuccess(loginProps);
+        this.loginSuccess({
+            id_token: token,
+        });
     };
 
     public googleFail = (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
@@ -103,9 +103,9 @@ export default class LoginModule {
 
     private logout = () => {
         if (this.isLoggedIn()) {
-            removeCookie(GOOGLE_ID_TOKEN);
             this.logoutGoogle();
         }
+        SpotifyModule.getInstance().logout();
         this.updateLoginState(false);
     }
 

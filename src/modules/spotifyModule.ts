@@ -1,5 +1,9 @@
 import SpotifyWebApi from 'spotify-web-api-node';
 import buildUrl from 'build-url';
+import Url from 'url-parse';
+import { setLoginCookie, getCookie, removeCookie } from './cookieMonster';
+
+const queryString = require('query-string');
 
 export interface ISong {
     songId: string,
@@ -16,11 +20,13 @@ export interface ISpotifyInfo {
 }
 
 const CLIENT_ID = '550a7c4f41d4465a859f4fa6f302d05d';
-const LOCAL_REDIRECT_URL = 'http://localhost:3000/admin';
-const PROD_REDIRECT_URL = 'https://humpdaymusicdrop.com/admin';
+const LOCAL_REDIRECT_URL = 'http://localhost:3000/spotifyCallback';
+const PROD_REDIRECT_URL = 'https://humpdaymusicdrop.com/spotifyCallback';
 
 const SPOTIFY_DOMAIN = 'https://accounts.spotify.com/';
 const SPOTIFY_AUTH_PATH = 'authorize';
+
+const SPOTIFY_AUTH_CODE: string = 'SPOTIFY_AUTH_CODE';
 
 export class SpotifyModule {
     private static instance: SpotifyModule;
@@ -34,12 +40,39 @@ export class SpotifyModule {
             clientId: CLIENT_ID,
             redirectUri: this.redirectUri
         });
-        const spotifyAuthEndpoint = this.getSpotifyAuthEndpoint(
+    }
+
+    public logout() {
+        if (this.isLoggedIn()) removeCookie(SPOTIFY_AUTH_CODE);
+    }
+
+    public initSpotify(): string | undefined {
+        const isLoggedInToSpotify = this.isLoggedIn();
+        if (isLoggedInToSpotify) return;
+        const code = this.getCodeFromUrl();
+        if (code) setLoginCookie(SPOTIFY_AUTH_CODE, code);
+        return code;
+    }
+
+    public getCodeFromUrl(): string | undefined {
+        const url = new Url(window.location.href);
+        const queryParams = queryString.parse(url.query);
+        return queryParams.code;
+    }
+
+    // Also need to check if the authCode is up to date
+    public isLoggedIn() {
+        const authCode = getCookie(SPOTIFY_AUTH_CODE);
+        return !!authCode;
+    }
+
+    public navigateToSpotifyLogin() {
+        const endpoint = this.getSpotifyAuthEndpoint(
             CLIENT_ID,
             'code',
             this.redirectUri
         );
-        console.log(spotifyAuthEndpoint);
+        window.location.href = endpoint;
     }
 
     private getSpotifyAuthEndpoint(
@@ -57,7 +90,8 @@ export class SpotifyModule {
         })
     }
 
-    public static getInstance(location:string) {
+    public static getInstance(location?: string) {
+        if(!location) location = window.location.href;
         if(!this.instance) this.instance = new SpotifyModule(location);
         return this.instance;
     }
