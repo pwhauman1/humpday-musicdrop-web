@@ -31,3 +31,7 @@ export function sendDateKeyToDate(sendDateKey: number): Date {
 
 export const IMAGE_WIDTH = 100;
 export const CARD_WIDTH = 450;
+
+export const SPOTIFY_DOMAIN = 'https://accounts.spotify.com/';
+export const SPOTIFY_AUTH_PATH = 'authorize';
+export const SPOTIFY_ACCESS_TOKEN_EXCHANGE_PATH = '/api/token';

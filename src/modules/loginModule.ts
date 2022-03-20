@@ -57,7 +57,6 @@ export default class LoginModule {
     };
     
     public googleLogout = (response?: any) => {
-        console.log(response);
         this.logoutSuccess();
     };
 

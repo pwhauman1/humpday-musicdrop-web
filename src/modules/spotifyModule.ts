@@ -2,6 +2,8 @@ import SpotifyWebApi from 'spotify-web-api-node';
 import buildUrl from 'build-url';
 import Url from 'url-parse';
 import { setLoginCookie, getCookie, removeCookie } from './cookieMonster';
+import { SPOTIFY_AUTH_PATH, SPOTIFY_DOMAIN } from '../Constants';
+import { postSpotifyAccessToken } from './axiosModule';
 
 const queryString = require('query-string');
 
@@ -23,10 +25,8 @@ const CLIENT_ID = '550a7c4f41d4465a859f4fa6f302d05d';
 const LOCAL_REDIRECT_URL = 'http://localhost:3000/spotifyCallback';
 const PROD_REDIRECT_URL = 'https://humpdaymusicdrop.com/spotifyCallback';
 
-const SPOTIFY_DOMAIN = 'https://accounts.spotify.com/';
-const SPOTIFY_AUTH_PATH = 'authorize';
-
-const SPOTIFY_AUTH_CODE: string = 'SPOTIFY_AUTH_CODE';
+const SPOTIFY_AUTH_TOKEN: string = 'SPOTIFY_AUTH_CODE';
+const SPOTIFY_REFRESH_TOKEN: string = 'SPOTIFY_REFRESH_TOKEN';
 
 export class SpotifyModule {
     private static instance: SpotifyModule;
@@ -43,15 +43,42 @@ export class SpotifyModule {
     }
 
     public logout() {
-        if (this.isLoggedIn()) removeCookie(SPOTIFY_AUTH_CODE);
+        if (this.isLoggedIn()) {
+            removeCookie(SPOTIFY_AUTH_TOKEN);
+            removeCookie(SPOTIFY_REFRESH_TOKEN);
+        }
     }
 
-    public initSpotify(): string | undefined {
+    public async initSpotify(): Promise<boolean> {
         const isLoggedInToSpotify = this.isLoggedIn();
-        if (isLoggedInToSpotify) return;
+        if (isLoggedInToSpotify) return true;
         const code = this.getCodeFromUrl();
-        if (code) setLoginCookie(SPOTIFY_AUTH_CODE, code);
-        return code;
+        if (!code) {
+            console.error('Spotify auth code not found in URL! Redirecting to home page.');
+            return false;
+        }
+        const [authToken, refreshToken] = await this.exchangeCodeForAuthToken(code);
+        if (refreshToken) {
+            setLoginCookie(SPOTIFY_REFRESH_TOKEN, refreshToken);
+        } else {
+            console.error('Spotify Authorization Token Exchange didn\'t return a refresh token!')
+        }
+        if (authToken) {
+            setLoginCookie(SPOTIFY_AUTH_TOKEN, authToken);
+            return true;
+        } else {
+            console.error('Could not excahnge auth code for an Access Token! Redirecting to home page.');
+            return false;
+        }
+    }
+
+    public async exchangeCodeForAuthToken(code: string): Promise<(string | undefined)[]> {
+        try {
+            return await postSpotifyAccessToken(code, this.redirectUri);
+        } catch (error) {
+            console.error(error);
+            return [undefined, undefined];
+        }
     }
 
     public getCodeFromUrl(): string | undefined {
@@ -62,8 +89,8 @@ export class SpotifyModule {
 
     // Also need to check if the authCode is up to date
     public isLoggedIn() {
-        const authCode = getCookie(SPOTIFY_AUTH_CODE);
-        return !!authCode;
+        const authToken = getCookie(SPOTIFY_AUTH_TOKEN);
+        return !!authToken;
     }
 
     public navigateToSpotifyLogin() {
@@ -91,8 +118,8 @@ export class SpotifyModule {
     }
 
     public static getInstance(location?: string) {
-        if(!location) location = window.location.href;
-        if(!this.instance) this.instance = new SpotifyModule(location);
+        if (!location) location = window.location.href;
+        if (!this.instance) this.instance = new SpotifyModule(location);
         return this.instance;
     }
 
