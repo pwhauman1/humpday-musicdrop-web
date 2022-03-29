@@ -32,7 +32,7 @@ function getContent(props: IDropCardProps) {
 }
 
 function getParagraphLine(header: string, content: string | undefined): JSX.Element {
-    return <><Text strong>{header}:</Text> {content ? content : '---'}</>;
+    return <div><Text strong>{header}:</Text> {content ? content : '---'}</div>;
 }
 
 function getTopRow(imgUrl: string, sendDateKey: number, albumId: string) {
@@ -42,8 +42,12 @@ function getTopRow(imgUrl: string, sendDateKey: number, albumId: string) {
                 <Image width={IMAGE_WIDTH} src={imgUrl}/>
             </Col>
             <Col flex='auto'>
-                <Text strong>Sending on:</Text> {sendDateKeyToDate(sendDateKey).toDateString()}
-                <Text strong>Album Id:</Text> {albumId}
+                <div>
+                    <Text strong>Sending on:</Text> {sendDateKeyToDate(sendDateKey).toDateString()}
+                </div>
+                <div>
+                    <Text strong>Album Id:</Text> {albumId}
+                </div>
             </Col>
         </Row>
     )
