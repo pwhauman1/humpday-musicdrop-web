@@ -4,6 +4,7 @@ import Url from 'url-parse';
 import { setLoginCookie, getCookie, removeCookie } from './cookieMonster';
 import { SPOTIFY_AUTH_PATH, SPOTIFY_DOMAIN } from '../Constants';
 import { postSpotifyAccessToken } from './axiosModule';
+import { urlJoin } from 'url-join-ts';
 
 const queryString = require('query-string');
 
@@ -21,12 +22,33 @@ export interface ISpotifyInfo {
     songs: ISong[],
 }
 
+interface IGetAlbumResponse {
+    body: {
+        artists?: {
+            name?: string,
+        }[],
+        images: {
+            url: string,
+            height: number,
+        }[],
+        id: string,
+        name: string,
+        tracks?: {
+            items?: {
+                name?: string,
+                id?: string
+            }[],
+        }
+    }
+}
+
 const CLIENT_ID = '550a7c4f41d4465a859f4fa6f302d05d';
 const LOCAL_REDIRECT_URL = 'http://localhost:3000/spotifyCallback';
 const PROD_REDIRECT_URL = 'https://humpdaymusicdrop.com/spotifyCallback';
+const SPOTIFY_OPEN_ALBUM_BASE_URL = 'https://open.spotify.com/album';
 
-const SPOTIFY_AUTH_TOKEN: string = 'SPOTIFY_AUTH_CODE';
-const SPOTIFY_REFRESH_TOKEN: string = 'SPOTIFY_REFRESH_TOKEN';
+export const SPOTIFY_AUTH_TOKEN: string = 'SPOTIFY_AUTH_CODE';
+export const SPOTIFY_REFRESH_TOKEN: string = 'SPOTIFY_REFRESH_TOKEN';
 
 export class SpotifyModule {
     private static instance: SpotifyModule;
@@ -65,6 +87,7 @@ export class SpotifyModule {
         }
         if (authToken) {
             setLoginCookie(SPOTIFY_AUTH_TOKEN, authToken);
+            this.spotifyApi.setAccessToken(authToken);
             return true;
         } else {
             console.error('Could not excahnge auth code for an Access Token! Redirecting to home page.');
@@ -132,28 +155,64 @@ export class SpotifyModule {
         return str;
     }
 
-}
+    public async getRelaventSpotifyInformation(albumId: string): Promise<ISpotifyInfo | undefined> {
+        try {
+            const resp: IGetAlbumResponse = await this.spotifyApi.getAlbum(albumId) as IGetAlbumResponse;
+            return this.getAlbumResponseToSpotifyInfo(resp)
+        } catch (error) {
+            console.error(error);
+        }
+        return undefined;
+    }
 
-export async function getRelaventSpotifyInformation(albumId: string): Promise<ISpotifyInfo | undefined> {
-    // await sleep(1000);
-    if (albumId === 'test' || albumId === '7G7lPTcJta35qGZ8LMIJ4y') {
+    private getAlbumResponseToSpotifyInfo(resp: IGetAlbumResponse): ISpotifyInfo | undefined {
+        // type declaring to any so we can incrementally add things to the 
+        // real response value
+        if (!resp.body) return undefined;
+
+        const albumName = resp.body.name;
+
+        let albumId = resp.body.id;
+
+        // if multiple artists, 
+        let artist: string | undefined;
+        const spotArtists = resp.body.artists;
+        // this ensures that names is an array of strings, not undefiend
+        const names = spotArtists?.map(e => e.name).filter(e => !!e);
+        if (names?.length) {
+            artist = names[0];
+            names.forEach((name, i) => {
+                if (i === 0) return;
+                artist += ` and ${name}`;
+            });
+        } else {
+            return undefined;
+        }
+        if(!artist) return undefined;
+
+        const spotifyUrl = urlJoin(SPOTIFY_OPEN_ALBUM_BASE_URL, resp.body.id);
+
+        // largest image first according to API doc
+        const imageUrl = resp.body.images[0].url;
+
+        let songs: ISong[];
+        let tracks = resp.body.tracks?.items?.filter(e => !!e.name && !!e.id);
+        if (tracks?.length) {
+            songs = tracks.map(e => {
+                return { songId: e.id, name: e.name }
+            }) as ISong[]; // need to cast because TS doesn't pick up the typecheck filter
+        } else {
+            return undefined
+        }
+
         return {
-            albumId: '7G7lPTcJta35qGZ8LMIJ4y',
-            albumName: 'Any Shape You Take',
-            artist: 'Indigo De Souza',
-            imageUrl: 'https://i.scdn.co/image/ab67616d0000b2738be26b6c162ff72ca4666ba6',
-            spotifyUrl: 'https://open.spotify.com/album/7G7lPTcJta35qGZ8LMIJ4y?si=_Fydit5YR8GAk_cVZ8TbdQ',
-            songs: [
-                { songId: '1yrJuYAIcCH9oNS9T0QJPt', name: '17' },
-                { songId: '4rKfScq2VOValQKH3YovZy', name: 'Darker Than Death' },
-            ]
+            albumId,
+            albumName,
+            artist,
+            imageUrl,
+            spotifyUrl,
+            songs,
         }
     }
-    return undefined;
-}
 
-function sleep(ms: number) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
 }

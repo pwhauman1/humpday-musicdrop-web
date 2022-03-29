@@ -1,6 +1,6 @@
 import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
 import { setLoginCookie, getCookie, removeCookie } from './cookieMonster';
-import { SpotifyModule } from './spotifyModule';
+import { SpotifyModule, SPOTIFY_AUTH_TOKEN } from './spotifyModule';
 
 export interface ILoginSuccess {
     id_token?: string;
@@ -78,8 +78,9 @@ export default class LoginModule {
                                                 /____/    
 */
     public isLoggedIn = (): boolean => {
-        const loginMethod = getCookie(GOOGLE_ID_TOKEN);
-        return !!loginMethod;
+        const googleCookie = getCookie(GOOGLE_ID_TOKEN);
+        const spotifyCookie = getCookie(SPOTIFY_AUTH_TOKEN)
+        return !!googleCookie && !!spotifyCookie;
     }
 
     public loginSuccess = (creds: ILoginSuccess) => {
@@ -101,9 +102,7 @@ export default class LoginModule {
     }
 
     private logout = () => {
-        if (this.isLoggedIn()) {
-            this.logoutGoogle();
-        }
+        this.logoutGoogle();
         SpotifyModule.getInstance().logout();
         this.updateLoginState(false);
     }
