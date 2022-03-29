@@ -1,32 +1,19 @@
 import { Col, Row, Skeleton, Image, DatePicker, Typography, Input, Button, Form, Select } from "antd";
 import React from "react";
-import { FLOW_STATES, IMAGE_WIDTH } from "../Constants";
+import { FLOW_STATES, IMAGE_WIDTH, ISubmitState } from "../Constants";
 import FlowWrapper from "./flowWrapper";
 import { Moment } from "moment";
 import { ISpotifyInfo, ISong, SpotifyModule } from "../modules/spotifyModule";
 import TextArea from "antd/lib/input/TextArea";
+import { putDrop } from "../modules/axiosModule";
 
 const { Text } = Typography;
-
-interface ISubjectives {
-    desc?: string,
-    favoriteSong?: string,
-    favoriteLyric?: string,
-}
 
 // This is what will cause the NewDrop info area to rerender
 interface INewDropState {
     albumId?: string,
     spotifyFlow: FLOW_STATES,
     spotifyInfo?: ISpotifyInfo,
-}
-
-// This state will be used to put a drop in our DDB
-// and be used to toggle the submit button's disabled attribute
-interface ISubmitState {
-    subjectives: ISubjectives,
-    sendDateKey?: number,
-    spotifyInfo?: ISpotifyInfo
 }
 
 let setSubmitState: Function;
@@ -54,7 +41,8 @@ function SubmitButton() {
     // on submit, do something with the state
     const canSubmit = !!state.spotifyInfo && !!state.sendDateKey;
     const onClick = () => {
-        console.info('SUBMITTED!', state);
+        putDrop(state);
+        // console.info('SUBMITTED!', state);
     }
     return (
         <div>

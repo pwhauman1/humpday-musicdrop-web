@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { urlJoin } from 'url-join-ts';
-import { IDrop, SPOTIFY_ACCESS_TOKEN_EXCHANGE_PATH, SPOTIFY_DOMAIN } from "../Constants";
+import { IDrop, ISubmitState, SPOTIFY_ACCESS_TOKEN_EXCHANGE_PATH, SPOTIFY_DOMAIN } from "../Constants";
 import { Buffer } from 'buffer';
 
 const queryString = require('query-string');
@@ -16,6 +16,16 @@ export interface ILambdaResponse {
     [param: string]: any,
 }
 
+export interface IPutDropBody {
+    sendDateKey: number,
+    albumId: string,
+    albumName: string,
+    artist: string,
+    imageUrl: string,
+    spotifyUrl: string,
+    [param: string]: string | number,
+}
+
 export async function getDrops(month: number, year: number): Promise<IDrop[]> {
     const response = await axios.get(DROPS_ENDPONINT, {
         headers: {},
@@ -27,6 +37,35 @@ export async function getDrops(month: number, year: number): Promise<IDrop[]> {
     const data = getResponseFromLambdaDataAsJson(response);
     if (!data) throw Error('Could not parse getDrops response!');
     return data.drops ? data.drops : [];
+}
+
+export async function putDrop(state: ISubmitState): Promise<string> {
+    if (!state.sendDateKey) throw new Error('No Send Date Associated with Drop. Cannot put!');
+    if (!state.spotifyInfo) throw new Error('No Spotify Info Associated with Drop. Cannot put!');
+    const drop: IPutDropBody = {
+        sendDateKey: state.sendDateKey,
+        albumId: state.spotifyInfo.albumId,
+        albumName: state.spotifyInfo.albumName,
+        artist: state.spotifyInfo.artist,
+        imageUrl: state.spotifyInfo.imageUrl,
+        spotifyUrl: state.spotifyInfo.spotifyUrl,
+    }
+    const subjectives = state.subjectives;
+    if(subjectives.desc) drop.desc = subjectives.desc;
+    if(subjectives.favoriteLyric) drop.favoriteLyric = subjectives.favoriteLyric;
+    if(subjectives.favoriteSong) drop.favoriteSong = subjectives.favoriteSong;
+    // TS compiler error i dont wanna debug rn lol
+    // Object.keys(state.subjectives).forEach((subjectiveKey: string) => {
+    //     body[subjectiveKey] = state.subjectives[subjectiveKey];
+    // });
+    const data = {
+        drop: drop
+    }
+    console.log('Putting with data', data);
+    const response = await axios.put(DROPS_ENDPONINT, data);
+    const responseJson = getResponseFromLambdaDataAsJson(response);
+    if(!responseJson?.infoMessage) throw new Error('Could not parse putDrops response!');
+    return responseJson.infoMessage;
 }
 
 // exchanges the code for the access token. this access token can be used 

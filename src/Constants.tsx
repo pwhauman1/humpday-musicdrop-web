@@ -1,3 +1,5 @@
+import { ISpotifyInfo } from "./modules/spotifyModule";
+
 export enum FLOW_STATES {
     READY,
     LOADING,
@@ -15,6 +17,20 @@ export interface IDrop {
     favoriteSong?: string,
     favoriteLyric?: string,
     desc?: string,
+}
+
+// This state will be used to put a drop in our DDB
+// and be used to toggle the submit button's disabled attribute
+export interface ISubmitState {
+    subjectives: ISubjectives,
+    sendDateKey?: number,
+    spotifyInfo?: ISpotifyInfo
+}
+
+interface ISubjectives {
+    desc?: string,
+    favoriteSong?: string,
+    favoriteLyric?: string,
 }
 
 export function sendDateKeyToDate(sendDateKey: number): Date {
