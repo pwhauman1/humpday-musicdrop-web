@@ -212,8 +212,8 @@ function getTopRow(state: INewDropState, setState: Function) {
                 <DropImage />
             </Col>
             <Col flex='auto'>
-                <p><Text strong>Send on:</Text> <SendOn /></p>
-                <p><Text strong>Album Id:</Text> <AlbumId /></p>
+                <Text strong>Send on:</Text> <SendOn />
+                <Text strong>Album Id:</Text> <AlbumId />
             </Col>
         </Row>
     )
