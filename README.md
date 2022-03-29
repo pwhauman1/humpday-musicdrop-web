@@ -1,4 +1,18 @@
-# Getting Started with Create React App
+![HDMD Logo](./readmeImages/hmLogo.png)
+
+# Hump Day Music Drop Web
+
+Hump day music drop is a personal project of mine to share music with friends.
+
+Each Wednesday, subscribers will get an email reccomending them an album to listen to chosen by me!
+
+## Status
+Backend works as expected. Front end is under development -- not published yet. Hoping to publish by end of April.
+
+## Backend
+Backend is a CDK managed set of AWS assets. See here: <https://github.com/pwhauman1/hump-day-music-drop-cdk>
+
+<!-- # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -43,4 +57,4 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To learn React, check out the [React documentation](https://reactjs.org/). -->
