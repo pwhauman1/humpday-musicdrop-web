@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { FLOW_STATES, IDrop } from '../Constants';
-import { InputNumber, Space, Typography } from 'antd'
+import { Col, InputNumber, Row, Space, Typography } from 'antd'
 import DropCard from "./dropCard";
 import { getDrops } from "../modules/axiosModule";
 import FlowWrapper, { IFlowWrapperProps } from "./flowWrapper";
@@ -83,11 +83,17 @@ async function getDropsFromDdb(month: number, year: number, setState: Function) 
 function getDropCards(drops: IDrop[] | undefined, flow: FLOW_STATES): JSX.Element {
     const dropCards: JSX.Element[] = [];
     if (drops) {
-        drops.forEach(drop => {
+        drops.sort((a: IDrop, b: IDrop) => {
+            return a.sendDateKey - b.sendDateKey;
+        }).forEach(drop => {
             dropCards.push(<DropCard {...drop} key={drop.sendDateKey} />)
         });
     }
-    const toRender = dropCards.length ? <div>{dropCards}</div> : <p>No drops found</p>;
+
+    // This makes the cards flex onto a new line
+    const spaceWrappedDrops = <Space size={[8, 16]} wrap>{dropCards}</Space>;
+
+    const toRender = dropCards.length ? spaceWrappedDrops : <p>No drops found</p>;
     const errorMessage = <p><Text type="danger">Oops, couldn't load cards</Text></p>
     const flowWrapperProps: IFlowWrapperProps = {
         flow,
