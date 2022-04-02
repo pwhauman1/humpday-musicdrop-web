@@ -68,6 +68,18 @@ export async function putDrop(state: ISubmitState): Promise<string> {
     return responseJson.infoMessage;
 }
 
+export async function deleteRecipient(email: string): Promise<string> {
+    const config = {
+        data: {
+            email,
+        }
+    }
+    const response = await axios.delete(RECIPIENTS_ENDPONINT, config);
+    const responseJson = getResponseFromLambdaDataAsJson(response);
+    if(!responseJson?.infoMessage) throw new Error('Could not parse deleteRecipient response!');
+    return responseJson.infoMessage;
+}
+
 // exchanges the code for the access token. this access token can be used 
 // to call the spotify API
 export async function postSpotifyAccessToken(authCode: string, redirectUri: string): Promise<(string | undefined)[]> {

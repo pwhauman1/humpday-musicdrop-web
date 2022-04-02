@@ -46,6 +46,13 @@ export function sendDateKeyToDate(sendDateKey: number): Date {
     return date;
 }
 
+export function getBaseUrl(): string {
+    if(window.location.href.includes('localhost')) return 'http://localhost:3000';
+    else return 'https://humpdaymusicdrop.com'
+}
+
+export const EMAIL_REG_EXP = /^[^\s]*@[^\s]*\.[a-z]*$/;
+
 export const IMAGE_WIDTH = 100;
 export const CARD_WIDTH = 450;
 
