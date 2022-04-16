@@ -8,7 +8,7 @@ export default function UnsubPage() {
     return (
         <div>
             <HomePageImage />
-            <Title level={2}> Thanks for being interested in my music!</Title>
+            <Title level={2}> Thanks for trying out my project!</Title>
             <Text> You're welcome back anytime, don't forget to have a great day 😁 </Text>
             <UnsubButton />
         </div>

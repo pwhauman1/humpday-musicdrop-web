@@ -51,9 +51,9 @@ export async function putDrop(state: ISubmitState): Promise<string> {
         spotifyUrl: state.spotifyInfo.spotifyUrl,
     }
     const subjectives = state.subjectives;
-    if(subjectives.desc) drop.desc = subjectives.desc;
-    if(subjectives.favoriteLyric) drop.favoriteLyric = subjectives.favoriteLyric;
-    if(subjectives.favoriteSong) drop.favoriteSong = subjectives.favoriteSong;
+    if (subjectives.desc) drop.desc = subjectives.desc;
+    if (subjectives.favoriteLyric) drop.favoriteLyric = subjectives.favoriteLyric;
+    if (subjectives.favoriteSong) drop.favoriteSong = subjectives.favoriteSong;
     // TS compiler error i dont wanna debug rn lol
     // Object.keys(state.subjectives).forEach((subjectiveKey: string) => {
     //     body[subjectiveKey] = state.subjectives[subjectiveKey];
@@ -64,7 +64,7 @@ export async function putDrop(state: ISubmitState): Promise<string> {
     console.log('Putting with data', data);
     const response = await axios.put(DROPS_ENDPONINT, data);
     const responseJson = getResponseFromLambdaDataAsJson(response);
-    if(!responseJson?.infoMessage) throw new Error('Could not parse putDrops response!');
+    if (!responseJson?.infoMessage) throw new Error('Could not parse putDrops response!');
     return responseJson.infoMessage;
 }
 
@@ -76,7 +76,16 @@ export async function deleteRecipient(email: string): Promise<string> {
     }
     const response = await axios.delete(RECIPIENTS_ENDPONINT, config);
     const responseJson = getResponseFromLambdaDataAsJson(response);
-    if(!responseJson?.infoMessage) throw new Error('Could not parse deleteRecipient response!');
+    if (!responseJson?.infoMessage) throw new Error('Could not parse deleteRecipient response!');
+    return responseJson.infoMessage;
+}
+export async function putRecipient(email: string): Promise<string> {
+    const data = {
+        email,
+    }
+    const response = await axios.put(RECIPIENTS_ENDPONINT, data);
+    const responseJson = getResponseFromLambdaDataAsJson(response);
+    if (!responseJson?.infoMessage) throw new Error('Could not parse putRecipient response!');
     return responseJson.infoMessage;
 }
 
