@@ -1,3 +1,43 @@
+$color-red-accent: #EE4266;
+$color-blue-accent: #5DB7DE;
+$color-dark: #2A1E5C;
+$color-primary: #F39237;
+$color-neutral: #FAF3DD;
+// min-height of 100vh 
+%fill-window-height {
+    // this prevents the height from being smaller than the contents of its children
+    height: 100%;
+    width: 100%;
+    // this sets the height to the entire viewport
+    min-height: 100vh;
+    display: block;
+}
+
 .App {
+    @extend %fill-window-height;
     padding: 20px;
+    background-color: $color-primary;
+}
+
+.homePage {
+    width: 60%;
+    min-width: 300px;
+    max-width: 600px;
+    .header {
+        padding: 20px;
+        width: 50%;
+    }
+    .contents {
+        background-color: $color-neutral;
+        padding: 20px;
+        border-radius: 8px;
+        color: $color-dark;
+    }
+}
+
+.horizontalCenter {
+    margin: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
