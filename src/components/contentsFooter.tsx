@@ -3,6 +3,7 @@ import { MY_SPOTIFY_IMAGE, SPOTIFY_PROFILE_LINK } from "../Constants";
 import '../App.scss';
 import { getBaseUrl } from "../Constants";
 import { urlJoin } from "url-join-ts";
+import { Link } from "react-router-dom";
 
 export default function ContentsFooter() {
 
@@ -21,9 +22,9 @@ export default function ContentsFooter() {
 function FollowMeSpotifyButton() {
     return (
         <div>
-            <Button 
-                shape='round' 
-                type='link' 
+            <Button
+                shape='round'
+                type='link'
                 icon={<Avatar size='small' src={MY_SPOTIFY_IMAGE} />}
                 href={SPOTIFY_PROFILE_LINK}
                 target='_blank'
@@ -35,31 +36,33 @@ function FollowMeSpotifyButton() {
 }
 
 function GoToUnsubscribePage() {
-    const to = urlJoin(getBaseUrl(), 'unsubscribe');
+    const to = '/unsubscribe';
     return (
         <div>
-            <Button 
-                shape='round' 
-                type='link'
-                href={to}
-            >
-                Unsubscribe
-            </Button>
+            <Link to={to}>
+                <Button
+                    shape='round'
+                    type='link'
+                >
+                    Unsubscribe
+                </Button>
+            </Link>
         </div>
     )
 }
 
 function GoToHomePage() {
-    const to = urlJoin(getBaseUrl());
+    const to = '/';
     return (
         <div>
-            <Button 
-                shape='round' 
-                type='link'
-                href={to}
-            >
-                Home
-            </Button>
+            <Link to={to}>
+                <Button
+                    shape='round'
+                    type='link'
+                >
+                    Home
+                </Button>
+            </Link>
         </div>
     )
 }
