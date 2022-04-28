@@ -19,20 +19,29 @@ $color-neutral: #FAF3DD;
     background-color: $color-primary;
 }
 
-.homePage {
+.header {
+    padding: 20px;
+    width: 50%;
+}
+
+.footer {
+    width: 95%;
+}
+
+.contents {
+    background-color: $color-neutral;
+    padding: 20px;
+    border-radius: 8px;
+    color: $color-dark;
+    h1 {
+        color: $color-dark
+    }
+}
+
+.page {
     width: 60%;
     min-width: 300px;
     max-width: 600px;
-    .header {
-        padding: 20px;
-        width: 50%;
-    }
-    .contents {
-        background-color: $color-neutral;
-        padding: 20px;
-        border-radius: 8px;
-        color: $color-dark;
-    }
 }
 
 .horizontalCenter {

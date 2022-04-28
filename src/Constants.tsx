@@ -59,3 +59,7 @@ export const CARD_WIDTH = 450;
 export const SPOTIFY_DOMAIN = 'https://accounts.spotify.com/';
 export const SPOTIFY_AUTH_PATH = 'authorize';
 export const SPOTIFY_ACCESS_TOKEN_EXCHANGE_PATH = '/api/token';
+
+export const MY_SPOTIFY_IMAGE = 'https://scontent-ort2-1.xx.fbcdn.net/v/t1.6435-1/101387759_2958093457610169_1345637687905746944_n.jpg?stp=dst-jpg_p320x320&_nc_cat=102&ccb=1-5&_nc_sid=0c64ff&_nc_ohc=EIazg7SmP14AX_EdZ0S&_nc_ht=scontent-ort2-1.xx&edm=AP4hL3IEAAAA&oh=00_AT8XT1obK4KE5LjXCEJ3vdn6k5jQ0TMu7WjigcuUC2nNxw&oe=6290F406'
+export const TOP_PLAYLIST_LINK = 'https://open.spotify.com/playlist/0IL1wNfJEjE66GuUzpzESN?si=b07273eae17e48e6';
+export const SPOTIFY_PROFILE_LINK = 'https://open.spotify.com/user/1274398011?si=49daa3df015849a8';
